@@ -14,7 +14,12 @@ const local_view=document.getElementById('local_videotag');
 const call_button=document.getElementById('button-connect');
 
 //setting button onclick function
-call_button.addEventListener('click',start);
+call_button.addEventListener('click',doStart);
+function doStart(){
+  socket.emit('start','start');
+  start();
+}
+socket.on('start',data=>{console.log('starting other peers start');call_button.style.visibility='hidden';start()});
 //signalling
 //signalling variables
 const constraints={audio:true,video:true}
