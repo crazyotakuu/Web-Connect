@@ -16,6 +16,9 @@ io.on('connection',socket=>{
     polite=!polite;
     socket.join(room);
     io.to(room).emit('joined',{intro:`hello user you have joined the ${room}`,data:polite});
+    socket.on('start',data=>{
+        socket.broadcast.emit('start',data);
+    })
     socket.on('send',data=>{
         socket.broadcast.emit('message',data);
     });
