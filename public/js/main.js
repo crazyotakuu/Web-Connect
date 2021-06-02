@@ -11,18 +11,18 @@ socket.on('joined',data=>{
 //variables creation
 const remote_view=document.getElementById('remote_videotag');
 const local_view=document.getElementById('local_videotag');
-const call_button=document.getElementById('button-connect');
+// const call_button=document.getElementById('button-connect');
 
 //setting button onclick function
-call_button.addEventListener('click',doStart);
-function doStart(){
-  socket.emit('start','start');
-  start();
-}
-socket.on('start',data=>{console.log('starting other peers start');call_button.style.visibility='hidden';start()});
+// call_button.addEventListener('click',doStart);
+// function doStart(){
+//   socket.emit('start','start');
+//   start();
+// }
+socket.on('start',data=>{console.log('performing start method');start()});
 //signalling
 //signalling variables
-const constraints={audio:true,video:true}
+const constraints={audio:false,video:true}
 const pc = new RTCPeerConnection({
   iceServers: [
       {
@@ -49,10 +49,11 @@ async function start(){
 pc.ontrack=({track,streams})=>{
   console.log('setting remote video');
   track.onunmute=()=>{
-    if(remote_view.srcObject) return;
+    if(remote_view.srcObject){console.log('something is happening here!');  return;}
+    else{
     remote_view.srcObject=streams[0];
   };
-};
+}};
 
 //the perfect negotiation logic
 //setting some variables
