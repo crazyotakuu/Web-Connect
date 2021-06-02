@@ -11,19 +11,23 @@ app.use(express.static(path.join(__dirname,"public")));
 
 const room='signalling_room';
 let polite=false;
+let no_of_peers=0;
 io.on('connection',socket=>{
     console.log('new connection!');
+    const socketId=socket.id;
     polite=!polite;
+    no_of_peers++;
     socket.join(room);
-    io.to(room).emit('joined',{intro:`hello user you have joined the ${room}`,data:polite});
-    socket.on('start',data=>{
-        socket.broadcast.emit('start',data);
-    })
+    io.to(socketId).emit('joined',{intro:`hello user you have joined the ${room}`,data:polite});
+    if(no_of_peers==2){
+        console.log(no_of_peers);
+        io.to(room).emit('start','start');
+    }
     socket.on('send',data=>{
         socket.broadcast.emit('message',data);
     });
 })
 
 
-const PORT=process.env.PORT;
+const PORT=process.env.PORT||4000;
 server.listen(PORT, ()=> console.log('server started on ',PORT));
