@@ -22,7 +22,7 @@ const local_view=document.getElementById('local_videotag');
 socket.on('start',data=>{console.log('performing start method');start()});
 //signalling
 //signalling variables
-const constraints={audio:false,video:true}
+const constraints={audio:true,video:true}
 const pc = new RTCPeerConnection({
   iceServers: [
       {
