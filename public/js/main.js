@@ -1,100 +1,113 @@
+//socket server creation
 const socket=io();
-const remote_video=document.getElementById("remote_videotag");
-const selfView=document.getElementById("local_videotag");
-let localstream;
-let rtc;
-const constraints = {audio: false, video: { width: { exact: 1030 }, height: { exact: 500 } }};
-start();
-async function start() {
-  try {
-    console.log('setting local stream');
-    // Get local stream, show it in self-view, and add it to be sent.
-    localstream =
-      await navigator.mediaDevices.getUserMedia(constraints);
-    selfView.srcObject = localstream;
-  } catch (err) {
-    console.error(err);
-  }
-}
-socket.on("sdp",handlesdp);
-socket.on('ice',handleice);
-socket.on('answer',handleAnswer);
-socket.on('new_join',callUser);
 
-function callUser(data) {
-  console.log("since new user has joined calling call user for peer A");
-  rtc = createPeer();
-  localstream.getTracks().forEach(track => rtc.addTrack(track, localstream));
-}
-
-function createPeer() {
-  console.log("creating peer connection");
-  const peer = new RTCPeerConnection({
-      iceServers: [
-          {
-              urls: "stun:stun.l.google.com:19302"
-          }
-      ]
-  });
-
-  peer.onicecandidate = handleICECandidateEvent;
-  peer.ontrack = handleTrackEvent;
-  peer.onnegotiationneeded = () => handleNegotiationNeededEvent();
-
-  return peer;
-}
-function handleNegotiationNeededEvent(){
-  console.log("sending sdp to peer b");
-  rtc.createOffer().then(offer=>{
-    return rtc.setLocalDescription(offer);
-  }).then(()=>{
-    socket.emit('offer',rtc.localDescription);
-  }).catch(e=>console.log(e));
-}
-
-function handlesdp(incoming){
-  console.log("getting sdp from peer a and sending sdp to peer a");
-rtc=createPeer();
-rtc.setRemoteDescription(incoming).then(()=>{
-  navigator.mediaDevices
-        .getUserMedia(constraints)
-        .then(stream => {
-            stream.getTracks().forEach(track => rtc.addTrack(track, stream));
-        })
-}).then(()=>{
-  return rtc.createAnswer();
-}).then(answer => {
-  return rtc.setLocalDescription(answer);
-}).then(()=>{
-  socket.emit('sendsdp',rtc.localDescription);
+let polite=true;
+//joined room message to check if socket.io is working
+socket.on('joined',data=>{
+  polite=data.data;
+  console.log(data.intro);
 });
-}
 
-function handleAnswer(incoming){
-  console.log("got sdp from peer b");
-  let sdp=incoming.sdp;
-  sdp=JSON.stringify(sdp);
-  sdp=sdp.replace("a=setup:active", "a=setup:passive");
-  sdp=JSON.parse(sdp);
-  incoming.sdp=sdp;
-  console.log(incoming);
-  rtc.setRemoteDescription(incoming).catch(e=>console.log(e));
-}
+//variables creation
+const remote_view=document.getElementById('remote_videotag');
+const local_view=document.getElementById('local_videotag');
+// const call_button=document.getElementById('button-connect');
 
-function handleICECandidateEvent(e){
-  if(e.candidate){
-    console.log("finding ice "+rtc.localDescription);
-    socket.emit('ice-candidate',e.candidate);
+//setting button onclick function
+// call_button.addEventListener('click',doStart);
+// function doStart(){
+//   socket.emit('start','start');
+//   start();
+// }
+socket.on('start',data=>{console.log('performing start method');start()});
+//signalling
+//signalling variables
+const constraints={audio:true,video:true}
+const pc = new RTCPeerConnection({
+  iceServers: [
+      {
+          urls: "stun:stun.l.google.com:19302"
+      }
+  ]
+});
+
+//setting local video stream and adding it to peer connection
+async function start(){
+  console.log('everything starts here - setting local video')
+  try {
+    const stream=await navigator.mediaDevices.getUserMedia(constraints);
+    for(const track of stream.getTracks()){
+      pc.addTrack(track,stream);
+    }
+    local_view.srcObject=stream;
+  } catch (error) {
+    console.log(error);
   }
 }
 
-function handleice(incoming){
-  console.log("setting ice");
-rtc.addIceCandidate(incoming);
-}
+//when the pc has a media track attached to it this event will get triggered
+pc.ontrack=({track,streams})=>{
+  console.log('setting remote video');
+  track.onunmute=()=>{
+    if(remote_view.srcObject){console.log('something is happening here!');  return;}
+    else{
+    remote_view.srcObject=streams[0];
+  };
+}};
 
-function handleTrackEvent(e){
-  console.log("setting streams");
-  remote_video.srcObject=e.streams[0];
-}
+//the perfect negotiation logic
+//setting some variables
+let makingOffer=false;
+let ignoreOffer=false;
+let isSettingRemoteAnswerPending=false;
 
+//sending ice candidates
+pc.onicecandidate=({candidate})=>{console.log('getting ice candidates and sending to peer');socket.emit('send',{type:"candidate",data:candidate});}
+
+//doing onnegotiationneeded
+pc.onnegotiationneeded=async()=>{
+  console.log('setting local sdp');
+  try {
+    makingOffer=true;
+    await pc.setLocalDescription();
+    socket.emit('send',{type:"sdp",data: pc.localDescription});
+  } catch (error) {
+    console.log(error);
+  } finally{
+    makingOffer=false;
+  }
+};
+
+
+//some more signalling 
+socket.on('message',data=async(data)=>{
+  try {
+    console.log('getting sdp');
+    if(data.type=="sdp"){
+      const readyForOffer=!makingOffer&&(pc.signalingState=="stable"||isSettingRemoteAnswerPending);
+      const sdp=data.data;
+      const offerCollision=sdp.type=="offer"&&!readyForOffer;
+      ignoreOffer=!polite &&offerCollision;
+      if(ignoreOffer){
+        return;
+      }
+      isSettingRemoteAnswerPending=sdp.type=="answer";
+      await pc.setRemoteDescription(sdp);
+      isSettingRemoteAnswerPending=false;
+      if(sdp.type=='offer'){
+        await pc.setLocalDescription();
+        socket.emit('send',{type:"sdp",data: pc.localDescription});
+      }
+    }else if(data.type=="candidate"){
+      try {
+        console.log('setting ice candidates');
+        let candidate=data.data;
+        await pc.addIceCandidate(candidate);
+      } catch (error) {
+        if(!ignoreOffer) throw error;
+      }
+    }
+  } catch (error) {
+    console.log(error);
+  }
+});
