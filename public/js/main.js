@@ -10,7 +10,7 @@ socket.on('joined',data=>{
 
 socket.on('clear',data=>{
   pc.close();
-  window.location.href = window.location.href;
+  window.location.reload(true)
 })
 
 //variables creation
