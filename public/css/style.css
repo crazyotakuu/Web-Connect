@@ -29,9 +29,7 @@ display: flex;
 }
 #controls div{
     flex-grow: 1;
-}
-video{
-    object-fit:cover;
+    
 }
 
 #remote_videotag{
@@ -43,8 +41,8 @@ video{
     height: 100px;
     width: 200px;
     position: absolute;
-    bottom: 0px;
-    right: 0px;
+    bottom: -2px;
+    right: 2px;
 }
 #local_videotag{
     width: 100%;

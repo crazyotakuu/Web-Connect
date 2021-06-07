@@ -8,27 +8,10 @@ socket.on('joined',data=>{
   console.log(data.intro);
 });
 
-socket.on('clear',data=>{
-  pc.close();
-  window.location.reload();
-})
-
 //variables creation
 const remote_view=document.getElementById('remote_videotag');
 const local_view=document.getElementById('local_videotag');
 // const call_button=document.getElementById('button-connect');
-const audio_mute=document.getElementById('audio_mute');
-const video_mute=document.getElementById('video_mute');
-
-audio_mute.addEventListener('click',()=>{
-  stream.getAudioTracks()[0].enabled=!(stream.getAudioTracks()[0].enabled);
-});
-
-video_mute.addEventListener('click',()=>{
-  stream.getVideoTracks()[0].enabled=!(stream.getVideoTracks()[0].enabled);
-})
-
-
 
 //setting button onclick function
 // call_button.addEventListener('click',doStart);
@@ -39,26 +22,20 @@ video_mute.addEventListener('click',()=>{
 socket.on('start',data=>{console.log('performing start method');start()});
 //signalling
 //signalling variables
-const constraints={audio:true,video:{width:1500,height:500}}
-let pc =null;
-let stream=null;
-
-if(pc==null){
-  pc = new RTCPeerConnection({
-    iceServers: [
-        {
-            urls: "stun:stun.l.google.com:19302"
-        }
-    ]
-  });
-}
+const constraints={audio:true,video:true}
+const pc = new RTCPeerConnection({
+  iceServers: [
+      {
+          urls: "stun:stun.l.google.com:19302"
+      }
+  ]
+});
 
 //setting local video stream and adding it to peer connection
 async function start(){
-  
   console.log('everything starts here - setting local video')
   try {
-    stream=await navigator.mediaDevices.getUserMedia(constraints);
+    const stream=await navigator.mediaDevices.getUserMedia(constraints);
     for(const track of stream.getTracks()){
       pc.addTrack(track,stream);
     }
@@ -74,10 +51,9 @@ pc.ontrack=({track,streams})=>{
   track.onunmute=()=>{
     if(remote_view.srcObject){console.log('something is happening here!');  return;}
     else{
-      remote_view.srcObject=streams[0];
-      };
-  }
+    remote_view.srcObject=streams[0];
   };
+}};
 
 //the perfect negotiation logic
 //setting some variables
