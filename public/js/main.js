@@ -39,7 +39,7 @@ video_mute.addEventListener('click',()=>{
 socket.on('start',data=>{console.log('performing start method');start()});
 //signalling
 //signalling variables
-const constraints={audio:true,video: { width: { min: 640 }, height: { min: 360 } }};
+const constraints={audio:true,video: { width: { min: 1280 }, height: { min: 720 } }};
 let pc=null;
 if(pc==null){
   pc = new RTCPeerConnection({
