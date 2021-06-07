@@ -39,10 +39,8 @@ video_mute.addEventListener('click',()=>{
 socket.on('start',data=>{console.log('performing start method');start()});
 //signalling
 //signalling variables
-const constraints={audio:true,video:{width:1500,height:500}}
-let pc =null;
-let stream=null;
-
+const constraints={audio:true,video: { width: { min: 640 }, height: { min: 360 } }};
+let pc=null;
 if(pc==null){
   pc = new RTCPeerConnection({
     iceServers: [
@@ -52,10 +50,10 @@ if(pc==null){
     ]
   });
 }
+let stream=null;
 
 //setting local video stream and adding it to peer connection
 async function start(){
-  
   console.log('everything starts here - setting local video')
   try {
     stream=await navigator.mediaDevices.getUserMedia(constraints);
@@ -74,10 +72,9 @@ pc.ontrack=({track,streams})=>{
   track.onunmute=()=>{
     if(remote_view.srcObject){console.log('something is happening here!');  return;}
     else{
-      remote_view.srcObject=streams[0];
-      };
-  }
+    remote_view.srcObject=streams[0];
   };
+}};
 
 //the perfect negotiation logic
 //setting some variables
