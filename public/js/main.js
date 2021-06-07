@@ -74,7 +74,6 @@ pc.ontrack=({track,streams})=>{
   track.onunmute=()=>{
     if(remote_view.srcObject){console.log('something is happening here!');  return;}
     else{
-      window.alert('Click OK if you are ready to start sharing the video and audio')
       remote_view.srcObject=streams[0];
       };
   }
