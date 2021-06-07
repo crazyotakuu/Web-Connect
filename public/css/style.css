@@ -37,6 +37,7 @@ video{
 #remote_videotag{
     width: 100%;
     height: 100%;
+    object-fit: fill;
 }
 
 #local_video{
