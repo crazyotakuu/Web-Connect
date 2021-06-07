@@ -1,6 +1,6 @@
 /* NavBar Styling start */
 .navbar-brand{
-    font-size: 2.5rem;
+    font-size: 2rem;
     margin: auto;
 }
 .fa-comments{
@@ -8,18 +8,27 @@
 }
 /* NavBar Styling end */
 /* Container Styling start */
+
+/* #button-div{
+    width: 200px;
+    margin:0 auto;
+}
+#button-connect{
+    width: 200px;
+    
+} */
+/* Container Styling end */
 .container{
-    margin-top: 3rem;
+    margin-top: 2rem;
 }
 #controls{
-    height: 50px;
     display: flex;
 }
 #controls div{
     flex-grow: 1;
 }
 .fas{
-    font-size:1.5rem;
+    font-size:1.7rem;
     margin-top: 9%;
     margin-left: 42%;
 
@@ -53,6 +62,9 @@
         font-size: 3rem;
         margin: auto;
     }
+    .container{
+        margin-top: 3rem;
+    }
     #comm_area{
         height: 500px;
        display: flex;
@@ -71,20 +83,20 @@
     }
     #controls div{
         flex-grow: 1;
+        
     }
     
     #remote_videotag{
         width: 100%;
         height: 100%;
-        /* object-fit:c; */
     }
     
     #local_video{
         height: 100px;
         width: 200px;
         position: absolute;
-        bottom: 0px;
-        right: 0px;
+        bottom: -2px;
+        right: 2px;
     }
     #local_videotag{
         width: 100%;
@@ -97,13 +109,4 @@
         
     }
     
-}
-/* #button-div{
-    width: 200px;
-    margin:0 auto;
-}
-#button-connect{
-    width: 200px;
-    
-} */
-/* Container Styling end */
+ }
