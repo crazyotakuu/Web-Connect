@@ -26,8 +26,12 @@ io.on('connection',socket=>{
     socket.on('send',data=>{
         socket.broadcast.emit('message',data);
     });
+    socket.on('disconnect', ()=>{
+        no_of_peers--;
+        io.to(room).emit('clear','clear');
+    })
 })
 
 
-const PORT=process.env.PORT||4000;
+const PORT=process.env.PORT||3000;
 server.listen(PORT, ()=> console.log('server started on ',PORT));
